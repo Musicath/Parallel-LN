@@ -3,6 +3,7 @@
 *.csv text eol=lf
 *.sh text eol=lf
 *.yml text eol=lf
+requirements-*.txt text eol=lf
 *.pt binary
 *.pdf binary
 *.png binary
