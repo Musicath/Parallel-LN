@@ -9,6 +9,8 @@ values. CPU unit tests cover construction and normalization-domain behavior.
 These checks do **not** certify that a full training run reproduces the paper.
 
 Run from the repository root with a matching PyTorch/torchvision installation.
+Use the `python -m experiments.vit...` form shown below for the package
+imports; direct file-path execution is not supported.
 The historical environment used Python 3.12.3, PyTorch 2.3.0+cu121,
 torchvision 0.18.0+cu121 and NumPy 1.26.4. Matplotlib is needed only for
 regenerating plots. SwanLab is optional and disabled unless `--enable-swanlab`

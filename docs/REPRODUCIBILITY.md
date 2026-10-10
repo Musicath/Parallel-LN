@@ -24,6 +24,11 @@ python figures/plot_normalization_domain_schematic.py
 
 `verify_data.py` checks CNN/ViT row completeness and selected manuscript-level checkpoints; it does not audit every original training log. `verify_fourier_data.py` independently reconstructs the shared-learning-rate selection and two Dense Fourier table summaries from all 1,440 sanitized per-run records. The plotting scripts write to the ignored `figures/generated/` directory. These figures use compact per-seed CSVs and may differ typographically from manuscript PDF assets.
 
+All six documented experiment/data-preparation entry points also passed
+`--help` import and argument-parsing checks on Windows. VGG and ViT use
+`python -m experiments...`, while Dense Fourier and CNN use direct script
+paths. These checks neither download data nor exercise a training epoch.
+
 The [ViT-specific guide](../experiments/vit/README.md) covers fixed 6k/20k
 artifact generation, the extracted model and one-cell training commands. Its
 6k label manifest was checked against an archived run's label counts and first

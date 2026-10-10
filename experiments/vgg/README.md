@@ -27,6 +27,9 @@ case.
 
 Example for **one** PLN cell (not a request to run the whole grid):
 
+Run the command from the repository root using `python -m`; direct execution
+of `train_cifar10.py` by file path does not set up the package import path.
+
 ```sh
 python -m experiments.vgg.train_cifar10 \
   --data-root data/cifar10 --download --output outputs/vgg/pln_lr0.01_init1_seed20 \
