@@ -128,6 +128,10 @@ The extracted VGG model was also copied into the existing temporary validation
 tree on the eight-RTX-4090 host. On idle GPU0, a batch-one 32×32 forward pass
 returned finite `(1, 10)` logits and the first convolution's backward gradient
 was finite. This was **not** a CIFAR-10 training run.
+After adding the VGG files and tests to that temporary source copy, the full
+fourteen-test suite also passed under the host's existing Python 3.10.16 /
+PyTorch 2.4.0 environment. The temporary tree is neither a pristine final
+checkout nor a new dependency installation.
 
 The historical Dense Fourier environment (`polynomial`) was also inspected
 read-only: Python 3.13.2, PyTorch 2.6.0+cu124, CUDA 12.4, NumPy 2.2.4.
