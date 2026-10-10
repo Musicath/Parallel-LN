@@ -18,6 +18,7 @@ not link to this repository while under its own review policy.
 | Sensitive material | Current added text/code scan found no private absolute paths or embedded credentials; large checkpoints and CIFAR images are excluded | Re-scan the exact staged diff immediately before push |
 | Validation | Clean source archive from commit `0cd15f4` passed 14 tests, data verifiers and plotting; updated temporary remote copy also passed 14 tests on Python 3.10 / PyTorch 2.4; remote GPU0 operator/ViT/VGG gradient and fixed-label artifact checks passed | New dependency installation check and at least one short train-run smoke test per publishable family |
 | Continuous integration | CPU workflow added for tests, data checks and plots | Its first GitHub-hosted run must pass after public push; no hosted run is claimed yet |
+| GitHub transport | `git fetch origin main` found no incoming changes; `git push --dry-run origin HEAD:main` succeeded without publishing | Actual push remains a separate release decision; recheck the exact final diff and remote head immediately before it |
 | Paper linkage | arXiv manuscript is maintained separately | Add repository link and availability statement only after the public release is actually available |
 
 No claim here implies that single-run smoke checks reproduce three-seed
