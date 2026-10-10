@@ -17,6 +17,13 @@ separate validation split. The runner uses SGD with momentum 0.9, weight decay
 40/80/120/160 with gamma 0.4; cuDNN benchmarking is enabled as in the
 historical trainer. It writes `config.json` and per-epoch JSONL
 records to a new output directory, and never silently replaces existing runs.
+The JSONL records both each epoch's `test_accuracy` and the running
+`best_test_accuracy`, matching the two quantities observable in the old
+trainer. The original plot-generating data were not found, so **do not assume**
+which of these quantities produced the manuscript figure. Selecting the best
+epoch by test accuracy would also make the test split a selection criterion;
+it should not be described as a purely untouched final evaluation in that
+case.
 
 Example for **one** PLN cell (not a request to run the whole grid):
 

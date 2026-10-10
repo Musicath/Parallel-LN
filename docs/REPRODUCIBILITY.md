@@ -39,6 +39,10 @@ per-run output logs were found; the current manuscript's 945-run figure is not
 validated by the extracted code alone. The historical `val_loader` actually
 uses the standard CIFAR-10 test split (`train=False`), which helps interpret
 the earlier "validation accuracy" wording but does not recover the figure data.
+The archived trainer evaluates that split after every epoch and maintains a
+running best test score. Without the plot's original data-selection script,
+we cannot determine whether the manuscript figure uses final-epoch or
+best-epoch accuracy; the reconstructed runner saves both per epoch.
 In a local read-only comparison against an archived `Musicath-base` VGG source,
 the extracted PLN model's state keys, initial tensors and forward output were
 identical under seed 20 and initialization scale 0.7. This is a model extraction
