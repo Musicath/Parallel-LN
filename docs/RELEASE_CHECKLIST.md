@@ -5,6 +5,11 @@ has been independently reproduced. The planned public repository is
 `Musicath/Parallel-LN`; the ICLR 2027 submission remains separate and should
 not link to this repository while under its own review policy.
 
+**Publication hold (author decision):** Do not push this release candidate to
+the public repository until the missing VGG run records and original PINN
+logs/scripts have been provided and reviewed. The author's earlier permission
+to publish minimal extracted code does not override this release-timing decision.
+
 | Area | Current evidence | Remaining gate |
 | --- | --- | --- |
 | Core PLN/PLS operator | API retained; numerical, gradient and shape tests pass | Confirm final arXiv notation and examples |
@@ -18,7 +23,7 @@ not link to this repository while under its own review policy.
 | Sensitive material | Current added text/code scan found no private absolute paths or embedded credentials; large checkpoints and CIFAR images are excluded | Re-scan the exact staged diff immediately before push |
 | Validation | A fresh isolated Linux Python 3.10 / PyTorch 2.4 CPU installation from commit `27f170a` passed `pip check`, 14 tests, data verifiers and plotting. A clean source archive from commit `8faaeeb` passed 16 tests, data verifiers and plotting in an existing Windows environment; new tests reject ViT output collisions and implicit experiment uploads. Remote GPU0 operator/ViT/VGG gradient and fixed-label artifact checks passed in an existing environment. A fresh Windows Python 3.11 installation passed non-torch checks but could not import PyTorch because of an unresolved `fbgemm.dll` dependency. | At least one short train-run smoke test per publishable family; resolve or document the Windows platform issue before claiming Windows support. Neither CPU checks nor gradient smoke tests reproduce paper statistics. |
 | Continuous integration | CPU workflow added for tests, data checks and plots | Its first GitHub-hosted run must pass after public push; no hosted run is claimed yet |
-| GitHub transport | `git fetch origin main` found no incoming changes; `git push --dry-run origin HEAD:main` succeeded without publishing | Actual push remains a separate release decision; recheck the exact final diff and remote head immediately before it |
+| GitHub transport | `git fetch origin main` found no incoming changes; `git push --dry-run origin HEAD:main` succeeded without publishing | **Hold public push** until the author supplies the missing VGG and PINN materials and explicitly lifts this hold; then recheck the exact final diff and remote head |
 | Paper linkage | arXiv manuscript is maintained separately | Add repository link and availability statement only after the public release is actually available |
 
 No claim here implies that single-run smoke checks reproduce three-seed

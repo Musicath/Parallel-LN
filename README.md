@@ -2,7 +2,7 @@
 
 PyTorch implementation and research code for *Parallel Layer Normalization for Universal Approximation*. This repository retains the original `ParallelLN` API and is being expanded to accompany the arXiv version of the paper. The manuscript and its LaTeX sources are maintained separately.
 
-**Release status:** preparation in progress. The core operator, extracted ViT model, and bundled figure data have CPU checks; the training runners have not yet passed a fresh-machine GPU reproduction. See [reproducibility status](docs/REPRODUCIBILITY.md) before using the numerical results.
+**Release status:** preparation in progress; publication is on hold at the author's request until the missing VGG run records and original PINN materials are available. The core operator, extracted ViT model, and bundled figure data have CPU checks; the training runners have not yet passed a fresh-machine GPU reproduction. See [reproducibility status](docs/REPRODUCIBILITY.md) before using the numerical results.
 
 ## The operator
 
