@@ -16,10 +16,12 @@ python -m pip install --upgrade pip
 # Linux/Windows, CUDA 12.1:
 python -m pip install torch==2.4.0 torchvision==0.19.0 \
   --index-url https://download.pytorch.org/whl/cu121
-python -m pip install numpy==2.2.6 matplotlib==3.10.3
+python -m pip install -r requirements-smoke.txt
 ```
 
 For CPU-only checks, use the PyTorch `cpu` wheel index in place of `cu121`.
+`requirements-smoke.txt` covers only the two platform-independent packages;
+it is not a historical lockfile or a substitute for the matched PyTorch pair.
 For another GPU or operating system, use the matching pair and wheel selector
 in the [official PyTorch installation guide](https://pytorch.org/get-started/locally/)
 or the [2.4.0/0.19.0 archive](https://pytorch.org/get-started/previous-versions/).
