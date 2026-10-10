@@ -7,7 +7,7 @@ This document separates **archived numerical evidence**, **available training co
 | Dense Fourier MLP table, dimensions 4 and 8 | `experiments/dense_fourier/run_dense_fourier_mlp.py` | `figures/data/dense_fourier_d{4,8}_runs.csv` (720 runs per dimension) and matching table summaries | Historical run grid and manuscript aggregation verified; fresh re-run pending |
 | Helmholtz PINN tables | Paused pending the authors' original logs or scripts | Manuscript values only; original run logs not located | **Not independently reproducible from this release yet**; do not substitute the later k=1/k=4 PINN protocol |
 | Mixed-axis CNN table and figures | `experiments/cnn/run_cifar10_conv_gn_{random,clean}_labels.py` | `figures/data/cnn_runs.csv` (288 per-seed records) | Data completeness and paper checkpoints pass; fresh GPU re-run pending |
-| VGG-16 initialization figure | Generic `Musicath-base` VGG backbone located; matching 945-run sweep not located | Verified plotting data not located | Not yet included as reproducible code/data |
+| VGG-16 initialization figure | `experiments/vgg/` contains a minimal extracted model and reconstructed one-cell runner; private grid has 630 scripts / two seeds, while manuscript specifies 945 runs / three seeds | Verified plotting data not located | Code path can be checked, but historical figure remains unverified; runner has no fresh training check yet |
 | ViT table and grouping figures | Extracted `experiments/vit/model.py` and adapted `train_vit_token_grouping.py` | `figures/data/vit_runs.csv` (1,377 per-seed records) plus exact 6k labels | Historical model-equivalence and data checks pass; fresh GPU re-run pending |
 
 The machine-translation experiments remain outside the active manuscript and are not part of this release.
@@ -32,6 +32,17 @@ when generated on the eight-RTX-4090 host using an existing CIFAR-10 cache,
 matched the archived 20k run's label counts, changed-label count and first 16
 clean/random labels. The original 20k artifact digest is not yet available for
 bytewise comparison.
+
+The [VGG-specific guide](../experiments/vgg/README.md) records the extracted
+model and one-cell runner. Its archival grid has only two seeds, and no matching
+per-run output logs were found; the current manuscript's 945-run figure is not
+validated by the extracted code alone. The historical `val_loader` actually
+uses the standard CIFAR-10 test split (`train=False`), which helps interpret
+the earlier "validation accuracy" wording but does not recover the figure data.
+In a local read-only comparison against an archived `Musicath-base` VGG source,
+the extracted PLN model's state keys, initial tensors and forward output were
+identical under seed 20 and initialization scale 0.7. This is a model extraction
+check, not a training-result comparison.
 
 ## Training entry points already included
 
@@ -93,6 +104,10 @@ the non-interactive Matplotlib backend. These are **unit/smoke checks, not
 training runs**.
 Three CNN tests check that the grid endpoints coincide with conventional GN
 and position-wise PLN, and reject invalid block sizes.
+Three VGG tests cover the extracted 13-convolution layout, five activation
+families, PLN[8], SAT formula, a forward/backward pass and a synthetic-data
+one-epoch file-output check; the total is now fourteen CPU tests. This is not
+a fresh CIFAR-10 training check.
 Both 6k and 20k fixed-label artifacts were generated in an isolated `/tmp`
 directory from the existing CIFAR-10 cache; a second invocation verified them
 without overwriting anything.
