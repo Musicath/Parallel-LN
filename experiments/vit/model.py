@@ -1,9 +1,14 @@
-"""Minimal ViT backbone extracted from the paper's Musicath-base experiment.
+"""Minimal ViT backbone adapted from the paper's Musicath-base experiment.
 
 Only the depth-4 CIFAR-10 path used by the released grouping study is kept:
 standard multi-head attention, pre-normalization, a class token, and an FFN.
 Parameter/module names intentionally match the historical implementation so
 that checkpoints can be compared directly. This is not a general ViT library.
+
+The historical backbone follows the classic timm-style ViT implementation,
+including its truncated-normal initialization pattern. This extracted file
+has been modified for the paper's standalone experiment. See
+THIRD_PARTY_NOTICES.md and LICENSE.txt for attribution and license details.
 """
 
 from __future__ import annotations

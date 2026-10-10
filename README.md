@@ -59,4 +59,4 @@ The [ViT guide](experiments/vit/README.md) explains how to reconstruct the fixed
 1. Ni et al., *On the Nonlinearity of Layer Normalization*, arXiv:2406.01255 (2024).
 2. Ni et al., *Parallel Layer Normalization for Universal Approximation*, arXiv:2505.13142 (2025; the arXiv revision is in preparation).
 
-The original repository uses the [Apache License 2.0](LICENSE.txt). Source provenance and third-party licensing checks for the expanded research code are tracked in [docs/SOURCE_PROVENANCE.md](docs/SOURCE_PROVENANCE.md); inclusion here should not be read as a claim that every paper result has been re-run.
+The original repository uses the [Apache License 2.0](LICENSE.txt). Source provenance and third-party licensing checks for the expanded research code are tracked in [docs/SOURCE_PROVENANCE.md](docs/SOURCE_PROVENANCE.md), with ViT upstream attribution in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Inclusion here should not be read as a claim that every paper result has been re-run.
