@@ -132,6 +132,11 @@ After adding the VGG files and tests to that temporary source copy, the full
 fourteen-test suite also passed under the host's existing Python 3.10.16 /
 PyTorch 2.4.0 environment. The temporary tree is neither a pristine final
 checkout nor a new dependency installation.
+`pip check` on this shared conda environment reports an unrelated pre-existing
+conflict: `datasets 3.6.0` requires `fsspec[http] <=2025.3.0`, while
+`fsspec 2025.3.2` is installed. This repository does not import either
+package. The test result is valid as a smoke check of the imported stack, but
+the environment must not be represented as a clean, conflict-free install.
 
 The historical Dense Fourier environment (`polynomial`) was also inspected
 read-only: Python 3.13.2, PyTorch 2.6.0+cu124, CUDA 12.4, NumPy 2.2.4.
