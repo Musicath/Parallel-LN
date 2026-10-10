@@ -50,6 +50,8 @@ python figures/plot_normalization_domain_schematic.py
 
 The generated figures are written to `figures/generated/` and are intentionally not tracked. Details of the training environments, experiment-to-paper map, and limitations are in [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md); outstanding publication gates are in the [release checklist](docs/RELEASE_CHECKLIST.md). CIFAR-10 images and model checkpoints are not redistributed.
 
+The CPU checks are also configured in a GitHub Actions workflow; its first hosted run is pending publication.
+
 The [ViT guide](experiments/vit/README.md) explains how to reconstruct the fixed-label artifacts without publishing CIFAR-10 images or the private `Musicath-base` framework.
 
 ## References and license

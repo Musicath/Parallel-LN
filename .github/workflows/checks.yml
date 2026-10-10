@@ -1,0 +1,33 @@
+name: Source and data checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  cpu-checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.10"
+      - name: Install matched CPU dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch==2.4.0 torchvision==0.19.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install numpy==2.2.6 matplotlib==3.10.3
+      - name: Unit and manuscript-data checks
+        run: |
+          python -m unittest discover -s tests -v
+          python figures/verify_data.py
+          python figures/verify_fourier_data.py
+      - name: Plot generation
+        env:
+          MPLBACKEND: Agg
+        run: |
+          python figures/plot_from_csv.py
+          python figures/plot_normalization_domain_schematic.py
