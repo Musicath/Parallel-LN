@@ -138,6 +138,24 @@ conflict: `datasets 3.6.0` requires `fsspec[http] <=2025.3.0`, while
 package. The test result is valid as a smoke check of the imported stack, but
 the environment must not be represented as a clean, conflict-free install.
 
+On 2026-10-10, a source archive from commit `27f170a` was installed in a
+new isolated Linux Python 3.10.16 virtual environment, using PyTorch
+2.4.0+cpu, torchvision 0.19.0+cpu and `requirements-smoke.txt`.
+`pip check`, all fourteen unit tests, both data verifiers and both plotting
+scripts passed. The first installation attempt used only the PyTorch CPU
+wheel index and failed because that index did not supply a build dependency;
+the successful attempt added PyPI as an extra index. This is an independent
+CPU installation and source-tree check, not a full GPU training run or a
+reproduction of the manuscript statistics.
+
+A separate fresh Windows Python 3.11.5 environment installed the matching
+CPU wheels and passed `pip check`, both data verifiers and both plotting
+scripts, but importing PyTorch failed with Windows error 126 while loading
+`fbgemm.dll` or one of its dependencies. Consequently, the torch-dependent
+unit tests could not start in that environment; this does not establish a
+repository-code test failure. The missing Windows runtime dependency has
+not been identified, and no third-party DLL was installed.
+
 The historical Dense Fourier environment (`polynomial`) was also inspected
 read-only: Python 3.13.2, PyTorch 2.6.0+cu124, CUDA 12.4, NumPy 2.2.4.
 Training runners have not been exercised on a clean checkout. Before a full

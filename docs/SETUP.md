@@ -20,6 +20,14 @@ python -m pip install -r requirements-smoke.txt
 ```
 
 For CPU-only checks, use the PyTorch `cpu` wheel index in place of `cu121`.
+If that index cannot supply an indirect dependency, add
+`--extra-index-url https://pypi.org/simple` to the PyTorch installation
+command. This was needed by a fresh Linux Python 3.10 installation on
+2026-10-10. On Windows, first verify that `python -c "import torch"` works:
+a fresh Python 3.11 CPU environment on one development machine instead
+failed while loading PyTorch's `fbgemm.dll` or one of its dependencies.
+That platform issue was not resolved by this repository's code checks; do
+not use DLL downloads from unofficial sites as an installation workaround.
 `requirements-smoke.txt` covers only the two platform-independent packages;
 it is not a historical lockfile or a substitute for the matched PyTorch pair.
 For another GPU or operating system, use the matching pair and wheel selector
