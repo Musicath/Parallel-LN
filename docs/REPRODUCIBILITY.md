@@ -10,7 +10,12 @@ This document separates **archived numerical evidence**, **available training co
 | VGG-16 initialization figure | `experiments/vgg/` contains a minimal extracted model and reconstructed one-cell runner; private grid has 630 scripts / two seeds, while manuscript specifies 945 runs / three seeds | Verified plotting data not located | Code path can be checked, but historical figure remains unverified; runner has no fresh training check yet |
 | ViT table and grouping figures | Extracted `experiments/vit/model.py` and adapted `train_vit_token_grouping.py` | `figures/data/vit_runs.csv` (1,377 per-seed records) plus exact 6k labels | Historical model-equivalence and data checks pass; fresh GPU re-run pending |
 
-The machine-translation experiments remain outside the active manuscript and are not part of this release.
+The coverage table was rechecked against the active experiment sections of the
+arXiv source on 2026-10-10. Its active families are Dense Fourier, Helmholtz
+PINN, mixed-axis CNN, VGG-16, and ViT. Earlier MNIST random-label material is
+commented out, and the preliminary machine-translation subsection is inside
+an excluded `\iffalse` block; neither is a missing release component. This
+scope check does not resolve the PINN or VGG provenance gaps above.
 
 ## Local checks without training
 
