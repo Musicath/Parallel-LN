@@ -124,6 +124,13 @@ The same source-tree check was repeated from local commit `0cd15f4` after
 the VGG extraction: all fourteen CPU tests, both data verifiers and both
 plotting scripts passed. The temporary archive and its generated figures were
 removed afterward; this was still not a clean dependency installation.
+The current arXiv release candidate was independently exported from commit
+`8faaeeb` using `git archive`; from that extracted tree, all sixteen CPU tests,
+both data verifiers and both plotting scripts passed on Windows. Import
+resolution pointed to the extracted `pln.py`. The temporary archive and
+generated figures were removed afterward. This check used an existing Python
+environment and is distinct from the earlier isolated Linux dependency
+installation at commit `27f170a`.
 The extracted VGG model was also copied into the existing temporary validation
 tree on the eight-RTX-4090 host. On idle GPU0, a batch-one 32×32 forward pass
 returned finite `(1, 10)` logits and the first convolution's backward gradient
