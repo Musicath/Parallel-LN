@@ -1,12 +1,15 @@
 # Environment setup
 
-Run the commands below from the repository root. Python 3.10 or newer is
-needed for the experiment scripts. Install PyTorch and torchvision as a
+Run the commands below from the repository root using **Python 3.10**, the
+version on which the reference smoke-check stack was tested. The script syntax
+requires Python 3.10 or newer, but the pinned PyTorch 2.4.0 wheel may not be
+available for every newer Python version. Install PyTorch and torchvision as a
 **matched pair** for the target CPU/CUDA platform. The pair below is the one
 used for the successful eight-RTX-4090 host smoke checks, not a claim that it
 is the original environment of every historical experiment.
 
 ```sh
+python --version  # confirm this resolves to Python 3.10
 python -m venv .venv
 # Activate .venv using your shell's normal method.
 python -m pip install --upgrade pip
