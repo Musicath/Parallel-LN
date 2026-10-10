@@ -31,7 +31,7 @@ Supported layouts are `[batch, features]` (`dim=2`), `[batch, tokens, features]`
 | `experiments/vit/` | Minimal ViT backbone, fixed labels and grouping runner | Extracted model verified against historical initialization/output; GPU reproduction pending |
 | `figures/` | Portable CNN/ViT plotting scripts and compact per-seed CSVs | Data checks pass; plots can be regenerated |
 | Helmholtz PINN | Paused pending the authors' original logs or scripts | Not yet claimed reproducible |
-| `experiments/vgg/` | Minimal VGG-16 extraction and a reconstructed one-cell runner | 14 CPU tests pass; historical 945-run figure/data still unverified |
+| `experiments/vgg/` | Minimal VGG-16 extraction and a reconstructed one-cell runner | VGG checks are included in the CPU suite; historical 945-run figure/data still unverified |
 
 The translation experiments are not part of the active arXiv manuscript and are not included here.
 

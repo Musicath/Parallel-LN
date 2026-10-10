@@ -949,6 +949,18 @@ def build_config(args, fixed_check, artifacts):
     return cfg
 
 
+def prepare_output_dirs(output, exp_name):
+    if not exp_name or exp_name in {".", ".."} or "/" in exp_name or "\\" in exp_name:
+        raise ValueError("--exp-name must be a single nonempty directory name")
+    out_dir = Path(output) / exp_name
+    out_dir.mkdir(parents=True, exist_ok=False)
+    log_dir = out_dir / "log_results"
+    model_dir = out_dir / "model_results"
+    log_dir.mkdir()
+    model_dir.mkdir()
+    return str(out_dir), str(log_dir), str(model_dir)
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -1043,16 +1055,11 @@ def main():
     seed_all(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    out_dir = os.path.join(args.output, args.exp_name)
-    log_dir = os.path.join(out_dir, "log_results")
-    model_dir = os.path.join(out_dir, "model_results")
-    os.makedirs(log_dir, exist_ok=True)
-    os.makedirs(model_dir, exist_ok=True)
-    args.log_dir = log_dir
-
     train_loader, eval_loader, clean_train_loader, clean_test_loader, artifacts = build_loaders(args)
     effective_noise_rate = 1.0 if args.data_mode == "full-random" else 0.0 if args.data_mode == "full-clean" else args.noise_rate
     fixed_check = verify_fixed_label_setup(train_loader, eval_loader, artifacts, effective_noise_rate)
+    out_dir, log_dir, model_dir = prepare_output_dirs(args.output, args.exp_name)
+    args.log_dir = log_dir
     config = build_config(args, fixed_check, artifacts)
     config_path = os.path.join(out_dir, "config.json")
     with open(config_path, "w", encoding="utf-8") as f:

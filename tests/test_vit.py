@@ -1,6 +1,8 @@
 """CPU checks for the extracted, framework-independent ViT path."""
 
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 
 import torch
@@ -10,10 +12,24 @@ from experiments.vit.prepare_fixed_labels import digest, read_manifest
 from experiments.vit.train_vit_token_grouping import (
     TokenChannelGroupCountNorm,
     build_model,
+    prepare_output_dirs,
 )
 
 
 class ViTReleaseTests(unittest.TestCase):
+    def test_output_directory_is_new_and_experiment_name_is_local(self):
+        with TemporaryDirectory() as tmp:
+            output = Path(tmp) / "runs"
+            out_dir, log_dir, model_dir = prepare_output_dirs(output, "first_run")
+            self.assertEqual(Path(out_dir), output / "first_run")
+            self.assertTrue(Path(log_dir).is_dir())
+            self.assertTrue(Path(model_dir).is_dir())
+            with self.assertRaises(FileExistsError):
+                prepare_output_dirs(output, "first_run")
+            for name in ("", ".", "..", "../other", "sub/run", r"sub\run"):
+                with self.subTest(name=name), self.assertRaises(ValueError):
+                    prepare_output_dirs(output, name)
+
     def test_minimal_backbone_forward_and_backward(self):
         torch.manual_seed(42)
         model = VisionTransformer(
