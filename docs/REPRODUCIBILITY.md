@@ -116,6 +116,10 @@ directory's ignored files) also passed the eleven CPU unit tests, both data
 verifiers and both plotting scripts on Windows. This checks source-tree
 portability, but uses an existing Python environment rather than a new
 dependency installation.
+The same source-tree check was repeated from local commit `0cd15f4` after
+the VGG extraction: all fourteen CPU tests, both data verifiers and both
+plotting scripts passed. The temporary archive and its generated figures were
+removed afterward; this was still not a clean dependency installation.
 
 The historical Dense Fourier environment (`polynomial`) was also inspected
 read-only: Python 3.13.2, PyTorch 2.6.0+cu124, CUDA 12.4, NumPy 2.2.4.

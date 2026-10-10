@@ -16,7 +16,7 @@ not link to this repository while under its own review policy.
 | Translation | Outside the active manuscript | Keep excluded |
 | Source/licensing | Original repository has Apache-2.0; the author requested extracting only the minimal paper path while retaining the broad `Musicath-base` framework | Final authorship/permission review of every added script before public push |
 | Sensitive material | Current added text/code scan found no private absolute paths or embedded credentials; large checkpoints and CIFAR images are excluded | Re-scan the exact staged diff immediately before push |
-| Validation | Earlier clean source archive passed 11 tests, data verifiers and plotting; current working tree passes 14 tests including VGG. Remote GPU0 operator/ViT gradient and fixed-label artifact checks passed | Repeat clean-archive check on final tree, new dependency installation check and at least one short train-run smoke test per publishable family |
+| Validation | Clean source archive from commit `0cd15f4` passed 14 tests, data verifiers and plotting; remote GPU0 operator/ViT gradient and fixed-label artifact checks passed | New dependency installation check and at least one short train-run smoke test per publishable family |
 | Continuous integration | CPU workflow added for tests, data checks and plots | Its first GitHub-hosted run must pass after public push; no hosted run is claimed yet |
 | Paper linkage | arXiv manuscript is maintained separately | Add repository link and availability statement only after the public release is actually available |
 
