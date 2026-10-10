@@ -1,6 +1,7 @@
 """CPU checks for the extracted, framework-independent ViT path."""
 
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
@@ -12,11 +13,28 @@ from experiments.vit.prepare_fixed_labels import digest, read_manifest
 from experiments.vit.train_vit_token_grouping import (
     TokenChannelGroupCountNorm,
     build_model,
+    init_swanlab,
     prepare_output_dirs,
 )
 
 
 class ViTReleaseTests(unittest.TestCase):
+    def test_swanlab_requires_explicit_destination_and_key(self):
+        args = SimpleNamespace(enable_swanlab=False)
+        logger = init_swanlab(args, {})
+        logger.log({"test": 1})
+        logger.finish()
+        args.enable_swanlab = True
+        args.swanlab_workspace = None
+        args.swanlab_project = None
+        with self.assertRaises(ValueError):
+            init_swanlab(args, {})
+        args.swanlab_workspace = "explicit-workspace"
+        args.swanlab_project = "explicit-project"
+        with patch.dict("os.environ", {"SWANLAB_API_KEY": ""}):
+            with self.assertRaises(RuntimeError):
+                init_swanlab(args, {})
+
     def test_output_directory_is_new_and_experiment_name_is_local(self):
         with TemporaryDirectory() as tmp:
             output = Path(tmp) / "runs"

@@ -12,7 +12,9 @@ Run from the repository root with a matching PyTorch/torchvision installation.
 The historical environment used Python 3.12.3, PyTorch 2.3.0+cu121,
 torchvision 0.18.0+cu121 and NumPy 1.26.4. Matplotlib is needed only for
 regenerating plots. SwanLab is optional and disabled unless `--enable-swanlab`
-is explicitly passed with `SWANLAB_API_KEY` set.
+is explicitly passed with `SWANLAB_API_KEY` set and both
+`--swanlab-workspace` and `--swanlab-project` specified. No personal
+workspace is built into the public runner.
 Each `--exp-name` must name a new output directory: the runner refuses to
 overwrite or append to an earlier run.
 

@@ -881,10 +881,7 @@ def save_checkpoint(path, model, optimizer, epoch, metrics):
 
 
 def init_swanlab(args, config):
-    api_key = os.environ.get("SWANLAB_API_KEY", "") if args.enable_swanlab else ""
-    if not api_key:
-        print("[SwanLab] API key absent; metrics will be stored locally only.", flush=True)
-
+    if not args.enable_swanlab:
         class LocalOnlyLogger:
             @staticmethod
             def log(*unused_args, **unused_kwargs):
@@ -895,6 +892,11 @@ def init_swanlab(args, config):
                 return None
 
         return LocalOnlyLogger()
+    if not args.swanlab_workspace or not args.swanlab_project:
+        raise ValueError("--enable-swanlab requires --swanlab-workspace and --swanlab-project")
+    api_key = os.environ.get("SWANLAB_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("--enable-swanlab requires SWANLAB_API_KEY")
     try:
         import swanlab
         from swanlab.swanlab_settings import Settings
@@ -1036,8 +1038,8 @@ def parse_args():
     parser.add_argument("--output", required=True)
     parser.add_argument("--exp-name", required=True)
     parser.add_argument("--run-key", required=True)
-    parser.add_argument("--swanlab-workspace", default="Musicath")
-    parser.add_argument("--swanlab-project", default="ViT_RandomLabel_DepthWidth_FullPLN")
+    parser.add_argument("--swanlab-workspace")
+    parser.add_argument("--swanlab-project")
     parser.add_argument("--swanlab-description", default="")
     parser.add_argument(
         "--enable-swanlab", action="store_true",
