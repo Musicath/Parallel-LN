@@ -1,0 +1,44 @@
+# Environment setup
+
+Run the commands below from the repository root. Python 3.10 or newer is
+needed for the experiment scripts. Install PyTorch and torchvision as a
+**matched pair** for the target CPU/CUDA platform. The pair below is the one
+used for the successful eight-RTX-4090 host smoke checks, not a claim that it
+is the original environment of every historical experiment.
+
+```sh
+python -m venv .venv
+# Activate .venv using your shell's normal method.
+python -m pip install --upgrade pip
+# Linux/Windows, CUDA 12.1:
+python -m pip install torch==2.4.0 torchvision==0.19.0 \
+  --index-url https://download.pytorch.org/whl/cu121
+python -m pip install numpy==2.2.6 matplotlib==3.10.3
+```
+
+For CPU-only checks, use the PyTorch `cpu` wheel index in place of `cu121`.
+For another GPU or operating system, use the matching pair and wheel selector
+in the [official PyTorch installation guide](https://pytorch.org/get-started/locally/)
+or the [2.4.0/0.19.0 archive](https://pytorch.org/get-started/previous-versions/).
+The manuscript's historical ViT/CNN runs used PyTorch 2.3.0+cu121 and
+torchvision 0.18.0+cu121; Dense Fourier used PyTorch 2.6.0+cu124. Those
+historical stacks are recorded in [REPRODUCIBILITY.md](REPRODUCIBILITY.md)
+because using the tested smoke-check environment does not establish exact
+bitwise reproduction of the old runs.
+
+Check imports and the bundled evidence without training:
+
+```sh
+python -c "import torch, torchvision, numpy, matplotlib; print(torch.__version__, torchvision.__version__)"
+python -m unittest discover -s tests -v
+python figures/verify_data.py
+python figures/verify_fourier_data.py
+python figures/plot_from_csv.py
+python figures/plot_normalization_domain_schematic.py
+```
+
+The plotting commands write to ignored `figures/generated/`. CIFAR-10 images
+are fetched only when a training/data-preparation command is passed
+`--download`; the repository does not bundle them. Training outputs should go
+under ignored `outputs/`, not into tracked source or figure-data directories.
+The ViT label-artifact workflow is in [its guide](../experiments/vit/README.md).

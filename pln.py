@@ -1,10 +1,10 @@
-"""
-Parallel Layer Normalization
-This is a PyTorch implementation of the Parallel Layer Normalization (PLN) as described in the paper [2]. 
+"""Position-wise Parallel Layer Normalization (PLN) and Layer Scaling (PLS).
 
-Reference:
-[1] Ni Y, Guo Y, Jia J, et al. On the nonlinearity of layer normalization[J]. arXiv preprint arXiv:2406.01255, 2024.
-[2] Ni Y, Liu Y, Sun W, et al. Parallel layer normalization for universal approximation[J]. arXiv preprint arXiv:2505.13142, 2025.
+Each contiguous group of ``num_per_group`` feature coordinates is normalized
+independently. For 4D inputs, normalization is performed at each spatial
+position; it does not pool statistics across positions like GroupNorm.
+``centering=False`` gives the RMS-style PLS variant. Practical ``eps`` and
+affine parameters are not part of the paper's idealized mathematical operator.
 """
 
 import torch
@@ -13,6 +13,14 @@ from torch.nn.parameter import Parameter
 
 
 class ParallelLN(nn.Module):
+    """Apply fixed-size group normalization to feature coordinates.
+
+    ``dim=2`` expects ``[batch, features]``; ``dim=3`` expects
+    ``[batch, tokens, features]``; ``dim=4`` expects
+    ``[batch, features, height, width]``. The historical class name and
+    constructor signature are retained for existing users.
+    """
+
     def __init__(
         self,
         num_features,
@@ -24,7 +32,17 @@ class ParallelLN(nn.Module):
         *args,
         **kwargs
     ):
-        super(ParallelLN, self).__init__()
+        super().__init__()
+        if not isinstance(num_features, int) or num_features <= 0:
+            raise ValueError("num_features must be a positive integer")
+        if not isinstance(num_per_group, int) or num_per_group <= 0:
+            raise ValueError("num_per_group must be a positive integer")
+        if num_features % num_per_group:
+            raise ValueError("num_features must be divisible by num_per_group")
+        if dim not in (2, 3, 4):
+            raise ValueError("dim must be 2, 3, or 4")
+        if eps < 0:
+            raise ValueError("eps must be non-negative")
         self.num_features = num_features
         self.num_per_group = num_per_group
         self.eps = eps
@@ -51,18 +69,25 @@ class ParallelLN(nn.Module):
             nn.init.zeros_(self.bias)
 
     def forward(self, x: torch.Tensor):
+        if x.ndim != self.dim:
+            raise ValueError(f"expected {self.dim}D input, got {x.ndim}D")
+        feature_axis = 1 if self.dim in (2, 4) else 2
+        if x.shape[feature_axis] != self.num_features:
+            raise ValueError(
+                f"expected {self.num_features} features on axis {feature_axis}, "
+                f"got {x.shape[feature_axis]}"
+            )
         if self.dim == 4:
             x = x.permute(0, 2, 3, 1)
         size = x.size()
-        assert self.num_features % self.num_per_group == 0, "num_features must be divisible by num_per_group"
         x = x.reshape(-1, self.num_features // self.num_per_group, self.num_per_group)
         if self.centering:
             mean = x.mean(dim=2, keepdim=True)
             xc = x - mean
         else:
             xc = x
-        std = torch.mean(xc * xc, dim=2, keepdim=True)
-        norm = 1 / (std + self.eps).sqrt()
+        second_moment = torch.mean(xc * xc, dim=2, keepdim=True)
+        norm = torch.rsqrt(second_moment + self.eps)
         xn = xc * norm
         xn = xn.reshape(size)
         if self.dim == 4:
@@ -72,7 +97,7 @@ class ParallelLN(nn.Module):
         return xn
 
     def extra_repr(self):
-        return "{num_features}, {num_per_group}, affine={affine}, centering={centering}".format(
+        return "{num_features}, {num_per_group}, eps={eps}, dim={dim}, affine={affine}, centering={centering}".format(
             **self.__dict__
         )
 

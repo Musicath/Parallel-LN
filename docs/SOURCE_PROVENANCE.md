@@ -1,0 +1,27 @@
+# Source provenance and publication gate
+
+This repository keeps the original 2025 `Parallel-LN` history and its Apache-2.0 license. New research material is included only when it is relevant to an active manuscript result and its source can be identified. The license of this repository does **not** automatically clear copied code from other authors or dependencies.
+
+| Path in this repository | Source | Evidence / caveat |
+| --- | --- | --- |
+| `pln.py`, `example.py` | Original `Musicath/Parallel-LN` repository | Existing Apache-2.0 repository; `pln.py` now has argument and shape validation plus tests |
+| `experiments/dense_fourier/run_dense_fourier_mlp.py` | Historical warmup-cosine runner at `experiments/dense_fourier_mlp/run_dense_fourier_mlp.py` | SHA-256 of copied source: `dcb7db0e1a694b64f5740f864be9676ed784b8e6040d46731b329d1c2eb4e31f`; matches the manuscript's 500-step warmup and cosine schedule |
+| `experiments/cnn/run_cifar10_conv_gn_random_labels.py` | 2026-09-12 CNN grid source snapshot | SHA-256: `4125aadb23abc7d2f7dbf13868dd9442698547ff84489d14ed49f39d8ecc70c9` |
+| `experiments/cnn/run_cifar10_conv_gn_clean_labels.py` | Same CNN grid snapshot | SHA-256: `405fdaffa8ed31869e66d135ff4e5d4f5842dca6dc522db27fd48a80d3e74729` |
+| `figures/plot_*.py`, `figures/verify_data.py`, CNN/ViT CSVs, Fourier table summaries | Paper repository `ICLR-PLN-2027/figure_sources/` | Compact per-seed CNN/ViT CSVs and five-target Fourier summaries; CNN/ViT source-file references point to an archived local result tree not bundled here |
+| `figures/data/dense_fourier_d{4,8}_runs.csv` | Historical `experiments/dense_fourier_mlp/results/*_analysis_*/all_runs.csv` | Exactly 720 cells per dimension; only configuration and final numerical fields retained. Training curves, device strings, and absolute source-file paths were removed. `figures/verify_fourier_data.py` reconstructs the manuscript aggregates. |
+| `experiments/vit/model.py` | Minimal extraction of `Musicath-base/main/models/vision_transformer.py` and default attention | Only the active ViT-D4/W192 path is retained. Under seed 42, baseline parameter keys, initial values and forward output matched exactly; both grouped replacement modes had identical parameter keys and initial values. The broader `Musicath-base` framework remains private. |
+| `experiments/vit/train_vit_token_grouping.py` | Archived random-20k training source, SHA-256 `fce28842b43967cbb2ed7b31d2971a95042575cb3a043288091f45da535a9d7b2` | Adapted to import the extracted model, accept data-root/download arguments, use tensor-only loading, and require explicit SwanLab opt-in. See its README. |
+| `experiments/vit/data/fixed_6k_labels.csv` | Local historical 6k PyTorch artifacts (`subset_indices.pt`, `clean_labels.pt`, `noise1/noisy_labels.pt`) | Exact label tensor digest is tested; first labels/counts match an archived random-6k run. The 20k artifact is reconstructed from this CSV and the archived extension algorithm; its counts and first labels match an archived 20k run, but its historical digest has not been obtained. |
+
+Historical run-source SHA-256 values above are provenance identifiers, **not** evidence that a fresh run matches the paper. If a source file is modified for portability, record the original hash and explain the change in its experiment README.
+
+## Exclusions and unresolved items
+
+- The later PINN k=1/k=4 snapshots use a different protocol from the manuscript's historical Helmholtz table. They have deliberately not been copied into this repository as that table's reproduction code. Exact original logs and run commands are still needed.
+- `Norm-exp-base/PDE` contains a relevant Helmholtz definition (5,000 interior and 500 boundary points), but the exact historical sweep configuration and raw result records have not been located. It is not vendored here while the PINN source question is open.
+- The public release contains a minimal extracted ViT model, not the broader `Musicath-base` framework. A full GPU training check has not yet been run, and the historical 20k label artifact is not available for a bytewise comparison.
+- A `Musicath-base` VGG backbone and older initialization scripts were found, but those older scripts sweep 108 ReLU/Tanh×No/LN/BN combinations rather than the manuscript's 945-run PLN[8]/ReLU/SiLU/Tanh/SAT grid. An archived earlier manuscript describes the figure metric as validation accuracy, while the current arXiv appendix calls it test accuracy; the original result keys/split need verification. Do not imply the figure can be reproduced until the exact sweep and numerical records are found or a clearly labeled new replication is completed.
+- Translation/fairseq snapshots and unrelated experiments are excluded from the active paper release.
+
+Before publishing changes to the public GitHub repository: verify authorship or permission for every added source file, scan the exact staged diff for credentials, private paths and large artifacts, validate the environment on a clean checkout, and review the README's status statements against actual test logs. This is a release gate, not a legal opinion.
