@@ -120,6 +120,10 @@ The same source-tree check was repeated from local commit `0cd15f4` after
 the VGG extraction: all fourteen CPU tests, both data verifiers and both
 plotting scripts passed. The temporary archive and its generated figures were
 removed afterward; this was still not a clean dependency installation.
+The extracted VGG model was also copied into the existing temporary validation
+tree on the eight-RTX-4090 host. On idle GPU0, a batch-one 32×32 forward pass
+returned finite `(1, 10)` logits and the first convolution's backward gradient
+was finite. This was **not** a CIFAR-10 training run.
 
 The historical Dense Fourier environment (`polynomial`) was also inspected
 read-only: Python 3.13.2, PyTorch 2.6.0+cu124, CUDA 12.4, NumPy 2.2.4.
