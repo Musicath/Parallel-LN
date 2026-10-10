@@ -8,22 +8,38 @@ available for every newer Python version. Install PyTorch and torchvision as a
 used for the successful eight-RTX-4090 host smoke checks, not a claim that it
 is the original environment of every historical experiment.
 
+Linux shell, CUDA 12.1:
+
 ```sh
-python --version  # confirm this resolves to Python 3.10
-python -m venv .venv
-# Activate .venv using your shell's normal method.
+python3.10 -m venv .venv
+. .venv/bin/activate
 python -m pip install --upgrade pip
-# Linux/Windows, CUDA 12.1:
 python -m pip install torch==2.4.0 torchvision==0.19.0 \
-  --index-url https://download.pytorch.org/whl/cu121
+  --index-url https://download.pytorch.org/whl/cu121 \
+  --extra-index-url https://pypi.org/simple
 python -m pip install -r requirements-smoke.txt
+python -m pip check
 ```
 
-For CPU-only checks, use the PyTorch `cpu` wheel index in place of `cu121`.
-If that index cannot supply an indirect dependency, add
-`--extra-index-url https://pypi.org/simple` to the PyTorch installation
-command. This was needed by a fresh Linux Python 3.10 installation on
-2026-10-10. On Windows, first verify that `python -c "import torch"` works:
+On a machine where `python3.10 -m venv` reports that `ensurepip` is missing,
+install the operating system's Python 3.10 venv package or use an isolated
+Python 3.10 distribution that provides venv.
+
+Windows PowerShell, CUDA 12.1 (no shell activation required):
+
+```powershell
+py -3.10 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install torch==2.4.0 torchvision==0.19.0 --index-url https://download.pytorch.org/whl/cu121 --extra-index-url https://pypi.org/simple
+.\.venv\Scripts\python.exe -m pip install -r requirements-smoke.txt
+.\.venv\Scripts\python.exe -m pip check
+```
+
+For CPU-only checks, use the PyTorch `cpu` wheel index in place of `cu121`
+and pin `torch==2.4.0+cpu torchvision==0.19.0+cpu`. Keep PyPI as the
+extra index for indirect dependencies; this was needed by a fresh Linux
+Python 3.10 installation on 2026-10-10. On Windows, first verify that
+`python -c "import torch"` works using the venv's Python executable:
 a fresh Python 3.11 CPU environment on one development machine instead
 failed while loading PyTorch's `fbgemm.dll` or one of its dependencies.
 That platform issue was not resolved by this repository's code checks; do
