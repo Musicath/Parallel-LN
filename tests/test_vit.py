@@ -9,16 +9,30 @@ from types import SimpleNamespace
 import torch
 
 from experiments.vit.model import VisionTransformer
-from experiments.vit.prepare_fixed_labels import digest, read_manifest
+from experiments.vit.prepare_fixed_labels import build_artifacts, digest, read_manifest
 from experiments.vit.train_vit_token_grouping import (
     TokenChannelGroupCountNorm,
     build_model,
+    git_status_summary,
     init_swanlab,
     prepare_output_dirs,
 )
 
 
 class ViTReleaseTests(unittest.TestCase):
+    def test_git_metadata_omits_worktree_file_names(self):
+        with patch(
+            "experiments.vit.train_vit_token_grouping.subprocess.check_output",
+            side_effect=["a" * 40 + "\n", " M private_notes.txt\n?? secret_path\n"],
+        ):
+            metadata = git_status_summary()
+        self.assertEqual(metadata, {
+            "available": True, "revision": "a" * 40,
+            "dirty": True, "num_entries": 2,
+        })
+        self.assertNotIn("private_notes", str(metadata))
+        self.assertNotIn("secret_path", str(metadata))
+
     def test_swanlab_requires_explicit_destination_and_key(self):
         args = SimpleNamespace(enable_swanlab=False)
         logger = init_swanlab(args, {})
@@ -91,13 +105,21 @@ class ViTReleaseTests(unittest.TestCase):
         self.assertEqual(len(activation_model.state_dict()), 64)
 
     def test_archived_6k_manifest_digest(self):
-        indices, clean, random = read_manifest()
+        indices, random = read_manifest()
         self.assertEqual(len(indices), 6000)
-        self.assertEqual(len(clean), 6000)
+        self.assertEqual(indices.tolist(), list(range(6000)))
         self.assertEqual(
             digest(random),
             "a88577fdb640f2d0b8832119d58be96bc6d9af9a9bf481e53cec16f7d000fd6a",
         )
+
+    def test_mismatched_cifar_clean_labels_are_rejected(self):
+        with patch(
+            "experiments.vit.prepare_fixed_labels.CIFAR10",
+            return_value=SimpleNamespace(targets=[0] * 6000),
+        ):
+            with self.assertRaisesRegex(ValueError, "archived 6k digest"):
+                build_artifacts(6000, Path("unused"), False)
 
 
 if __name__ == "__main__":

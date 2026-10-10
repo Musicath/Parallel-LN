@@ -19,19 +19,29 @@ is explicitly passed with `SWANLAB_API_KEY` set and both
 workspace is built into the public runner.
 Each `--exp-name` must name a new output directory: the runner refuses to
 overwrite or append to an earlier run.
+The saved configuration records the Git revision and whether the checkout is
+dirty, but not the names of changed files. It still records user-supplied data
+and artifact paths; review any run configuration before sharing it publicly.
 
 ## Fixed labels
 
 The tracked `data/fixed_6k_labels.csv` preserves the exact first-6k CIFAR-10
-training indices and clean/random labels. Its random-label SHA-256 tensor digest
-is checked by the test suite and its first labels/counts match an archived run
-configuration. The historical 20k protocol retains those first 6k labels and
-generates the additional 14k from a separate CPU generator seeded 20260629.
+training indices and random labels, but **not** the dataset's original clean
+labels. The builder reads those from the user's CIFAR-10 copy and checks their
+first-6k SHA-256 tensor digest against the archived value. The random-label
+digest is checked by the test suite and the first labels/counts match an
+archived run configuration. The historical 20k protocol retains those first
+6k random labels and generates the additional 14k from a separate CPU
+generator seeded 20260629.
 On the eight-RTX-4090 host, the generated 20k label counts, changed-label
 count, and first 16 clean/random labels matched an archived 20k run config.
 The original 20k `.pt` artifact has not been located for a bytewise digest
 comparison, so this remains a protocol reconstruction rather than a claim of
 byte-for-byte artifact identity.
+
+The minimized two-column CSV produced byte-identical 6k and 20k tensors,
+summaries and metadata to the earlier three-column candidate when both were
+run on the same CIFAR-10 cache; see `../../docs/DATA_RELEASE_REVIEW.md`.
 
 ```sh
 python -m experiments.vit.prepare_fixed_labels --size 6000 \
@@ -40,9 +50,11 @@ python -m experiments.vit.prepare_fixed_labels --size 20000 \
   --data-root data --output data/fixed20k
 ```
 
-The builder verifies CIFAR-10's clean labels against the archived 6k manifest
-and refuses to overwrite a differing artifact. CIFAR-10 images are downloaded
-by torchvision; they are not redistributed in this repository.
+The builder verifies CIFAR-10's clean labels against the archived 6k manifest.
+For an existing output directory, it checks every tensor plus the generated
+summary and SHA-256 metadata, and refuses to overwrite a differing or incomplete
+artifact set. CIFAR-10 images can be downloaded by torchvision when
+`--download` is passed; they are not redistributed in this repository.
 
 ## One paper configuration
 
@@ -78,4 +90,7 @@ was adapted from the random-20k snapshot (SHA-256
 the external framework import was replaced by the extracted model, data paths
 became CLI arguments, CIFAR-10 downloading became opt-in, tensor loading uses
 `weights_only=True`, and SwanLab logging became opt-in. Numerical equivalence
-of the extracted model was checked locally; fresh GPU training is pending.
+of the extracted model was checked locally. One full 100-epoch GPU run of a
+random-20k PLN[4] configuration closely matched its archived best-fit value;
+see the [single-configuration report](../../docs/VIT_FULL_VALIDATION_20261010.md).
+The full grouping grid and three-seed aggregates are not freshly reproduced.

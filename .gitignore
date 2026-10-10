@@ -3,9 +3,16 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+.env
+.env.*
+!.env.example
+.netrc
 build/
 dist/
 *.egg-info/
+/wandb/
+/swanlog/
+/swanlab/
 /data/
 outputs/
 results/

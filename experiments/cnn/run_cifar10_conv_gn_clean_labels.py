@@ -11,7 +11,6 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import os
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -20,12 +19,22 @@ import torch
 from torch import nn
 from torchvision.datasets import CIFAR10
 
-from run_cifar10_conv_gn_random_labels import (
-    ConvNormNet,
-    make_optimizer,
-    parse_csv,
-    set_seed,
-)
+if __package__:
+    from .run_output import check_existing, metadata, save_exclusive
+    from .run_cifar10_conv_gn_random_labels import (
+        ConvNormNet,
+        make_optimizer,
+        parse_csv,
+        set_seed,
+    )
+else:
+    from run_output import check_existing, metadata, save_exclusive
+    from run_cifar10_conv_gn_random_labels import (
+        ConvNormNet,
+        make_optimizer,
+        parse_csv,
+        set_seed,
+    )
 
 
 def _normalize(images: torch.Tensor, device: torch.device) -> torch.Tensor:
@@ -40,9 +49,10 @@ def make_clean_label_data(
     n_train: int,
     data_seed: int,
     device: torch.device,
+    download: bool = False,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-    train_set = CIFAR10(str(data_root), train=True, download=True)
-    test_set = CIFAR10(str(data_root), train=False, download=True)
+    train_set = CIFAR10(str(data_root), train=True, download=download)
+    test_set = CIFAR10(str(data_root), train=False, download=download)
     if not 1 <= n_train <= len(train_set):
         raise ValueError(f"n_train must be in [1, {len(train_set)}]")
 
@@ -207,6 +217,8 @@ def aggregate(output: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-root", type=Path, required=True)
+    parser.add_argument("--download", action="store_true",
+                        help="download CIFAR-10 if absent; disabled by default")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--n-train", type=int, default=50_000)
     parser.add_argument("--channels", type=int, default=128)
@@ -227,10 +239,7 @@ def main() -> None:
     parser.add_argument("--smoke", action="store_true")
     args = parser.parse_args()
 
-    if not torch.cuda.is_available():
-        raise RuntimeError("CUDA is required")
     device = torch.device("cuda:0")
-    torch.backends.cuda.matmul.allow_tf32 = True
     args.output.mkdir(parents=True, exist_ok=True)
     operators = parse_csv(args.operators, str)
     if args.smoke:
@@ -238,8 +247,43 @@ def main() -> None:
         args.epochs = 1
         operators = ["bgn8k4"]
 
+    pending = []
+    planned_paths = set()
+    for operator in operators:
+        cfg = Config(
+            n_train=args.n_train,
+            channels=args.channels,
+            operator=operator,
+            lr=args.lr,
+            model_seed=args.model_seed,
+            data_seed=args.data_seed,
+            epochs=args.epochs,
+            batch_size=args.batch_size,
+            pool_size=args.pool_size,
+            depth=args.depth,
+            optimizer=args.optimizer,
+            weight_decay=args.weight_decay,
+            momentum=args.momentum,
+            nesterov=args.nesterov,
+        )
+        result_path = args.output / f"{cfg.key}.json"
+        if result_path in planned_paths:
+            raise ValueError(f"duplicate requested run key: {cfg.key}")
+        planned_paths.add(result_path)
+        expected = metadata(cfg, eval_every=args.eval_every,
+                            device=str(device), data_root=args.data_root)
+        if check_existing(result_path, expected, skip_existing=args.skip_existing):
+            print(f"skip matching existing: {result_path.name}", flush=True)
+            continue
+        pending.append((cfg, result_path, expected))
+    if not pending:
+        return
+    if not torch.cuda.is_available():
+        raise RuntimeError("CUDA is required")
+    torch.backends.cuda.matmul.allow_tf32 = True
     train_images, train_labels, test_images, test_labels = make_clean_label_data(
-        args.data_root, args.n_train, args.data_seed, device
+        args.data_root, args.n_train, args.data_seed, device,
+        download=args.download,
     )
     print(
         json.dumps(
@@ -265,27 +309,7 @@ def main() -> None:
         flush=True,
     )
 
-    for operator in operators:
-        cfg = Config(
-            n_train=args.n_train,
-            channels=args.channels,
-            operator=operator,
-            lr=args.lr,
-            model_seed=args.model_seed,
-            data_seed=args.data_seed,
-            epochs=args.epochs,
-            batch_size=args.batch_size,
-            pool_size=args.pool_size,
-            depth=args.depth,
-            optimizer=args.optimizer,
-            weight_decay=args.weight_decay,
-            momentum=args.momentum,
-            nesterov=args.nesterov,
-        )
-        result_path = args.output / f"{cfg.key}.json"
-        if args.skip_existing and result_path.exists():
-            print(f"skip existing: {result_path.name}", flush=True)
-            continue
+    for cfg, result_path, expected in pending:
         result = train_one(
             cfg,
             train_images,
@@ -295,9 +319,8 @@ def main() -> None:
             device,
             args.eval_every,
         )
-        temporary = result_path.with_suffix(".json.tmp")
-        temporary.write_text(json.dumps(result, indent=2))
-        os.replace(temporary, result_path)
+        result.update(expected)
+        save_exclusive(result_path, result)
         aggregate(args.output)
         print(
             f"completed {cfg.key}: train={result['final_train_acc']:.4%} "

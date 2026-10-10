@@ -59,15 +59,22 @@ Check imports and the bundled evidence without training:
 
 ```sh
 python -c "import torch, torchvision, numpy, matplotlib; print(torch.__version__, torchvision.__version__)"
-python -m unittest discover -s tests -v
-python figures/verify_data.py
-python figures/verify_fourier_data.py
-python figures/plot_from_csv.py
-python figures/plot_normalization_domain_schematic.py
+python tools/validate_candidate.py
 ```
 
-The plotting commands write to ignored `figures/generated/`. CIFAR-10 images
+The validator runs the tests in normal and optimized Python modes, checks the
+three numerical-data verifiers, probes experiment entry points without training,
+and confirms eight plots were regenerated. It does not test installation
+isolation, download a dataset, run GPU training, or prove the historical paper
+results. Plotting writes to ignored `figures/generated/`. CIFAR-10 images
 are fetched only when a training/data-preparation command is passed
 `--download`; the repository does not bundle them. Training outputs should go
 under ignored `outputs/`, not into tracked source or figure-data directories.
 The ViT label-artifact workflow is in [its guide](../experiments/vit/README.md).
+
+The standalone Helmholtz PINN/NTK runner additionally requires DeepXDE.
+After installing a platform-matched PyTorch build, install
+`deepxde==1.15.0` in that environment and follow the separate
+[PINN/NTK guide](../experiments/pinn/README.md). Its original server
+environment used PyTorch 2.6.0+cu124, not the general 2.4.0 smoke stack
+above; cross-version numerical identity has not been established.

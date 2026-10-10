@@ -11,11 +11,41 @@ from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
 from experiments.vgg.model import ACTIVATIONS, PaperVGG16, SaturatingActivation
+from experiments.vgg.make_grid_plan import (
+    INIT_SCALES, LEARNING_RATES, build_plan, main as write_grid_plan,
+)
 from experiments.vgg.train_cifar10 import parse_args, run
 from pln import ParallelLN
 
 
 class VGGExtractionTests(unittest.TestCase):
+    def test_grid_plan_enumerates_paper_factors_without_training(self):
+        self.assertEqual(LEARNING_RATES,
+                         ("0.001", "0.003", "0.01", "0.03", "0.1", "0.3", "1"))
+        self.assertEqual(INIT_SCALES,
+                         ("0.25", "0.35", "0.5", "0.7", "1.0", "1.4", "2.0", "2.8", "4.0"))
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for seeds, expected in (((20, 30), 630), ((20, 30, 40), 945)):
+                plan = list(build_plan(seeds, root / "data", root / "runs"))
+                self.assertEqual(len(plan), expected)
+                self.assertEqual(len({row["run_id"] for row in plan}), expected)
+                self.assertTrue(all(row["argv"][1:3] == ["-m", "experiments.vgg.train_cifar10"]
+                                    for row in plan))
+                self.assertTrue(all(row["argv"][-2:] == ["--device", "cuda:0"]
+                                    for row in plan))
+            parsed = parse_args(plan[0]["argv"][3:])
+            self.assertEqual(parsed.activation, "pln")
+            self.assertEqual(parsed.epochs, 200)
+            with self.assertRaises(ValueError):
+                list(build_plan((20, 20), root / "data", root / "runs"))
+
+            plan_path = root / "plan.jsonl"
+            write_grid_plan(["--seeds", "20", "30", "40", "--plan", str(plan_path)])
+            self.assertEqual(len(plan_path.read_text(encoding="utf-8").splitlines()), 945)
+            with self.assertRaises(FileExistsError):
+                write_grid_plan(["--seeds", "20", "30", "40", "--plan", str(plan_path)])
+
     def test_historical_feature_layout_and_five_activations(self):
         self.assertEqual(ACTIVATIONS, ("pln", "relu", "silu", "tanh", "sat"))
         for name in ACTIVATIONS:

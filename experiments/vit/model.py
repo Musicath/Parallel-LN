@@ -1,3 +1,6 @@
+# Portions follow timm's Vision Transformer implementation.
+# Copyright 2020 Ross Wightman. Licensed under Apache-2.0.
+# This file was reduced and modified for the paper-specific CIFAR-10 study.
 """Minimal ViT backbone adapted from the paper's Musicath-base experiment.
 
 Only the depth-4 CIFAR-10 path used by the released grouping study is kept:

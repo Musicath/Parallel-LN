@@ -17,6 +17,8 @@ from matplotlib.colors import Normalize
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch, Rectangle
 
+from validate_grid import validate_cnn_rows, validate_vit_rows
+
 
 HERE = Path(__file__).resolve().parent
 OUTPUT = HERE / "generated"
@@ -269,6 +271,8 @@ def main():
                          "pdf.fonttype": 42, "ps.fonttype": 42})
     cnn = records("cnn_runs.csv")
     vit = records("vit_runs.csv")
+    validate_cnn_rows(cnn, GC, K)
+    validate_vit_rows(vit, GT, VIT_GC)
     plot_cnn_heatmap(cnn)
     plot_cnn_direction(cnn)
     for dataset in ("random6k", "random20k", "clean50k"):

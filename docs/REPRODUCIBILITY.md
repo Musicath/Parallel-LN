@@ -4,35 +4,45 @@ This document separates **archived numerical evidence**, **available training co
 
 | Manuscript item | Training source | Bundled numerical data | Status |
 | --- | --- | --- | --- |
-| Dense Fourier MLP table, dimensions 4 and 8 | `experiments/dense_fourier/run_dense_fourier_mlp.py` | `figures/data/dense_fourier_d{4,8}_runs.csv` (720 runs per dimension) and matching table summaries | Historical run grid and manuscript aggregation verified; fresh re-run pending |
-| Helmholtz PINN tables | Paused pending the authors' original logs or scripts | Manuscript values only; original run logs not located | **Not independently reproducible from this release yet**; do not substitute the later k=1/k=4 PINN protocol |
-| Mixed-axis CNN table and figures | `experiments/cnn/run_cifar10_conv_gn_{random,clean}_labels.py` | `figures/data/cnn_runs.csv` (288 per-seed records) | Data completeness and paper checkpoints pass; fresh GPU re-run pending |
-| VGG-16 initialization figure | `experiments/vgg/` contains a minimal extracted model and reconstructed one-cell runner; private grid has 630 scripts / two seeds, while manuscript specifies 945 runs / three seeds | Verified plotting data not located | Code path can be checked, but historical figure remains unverified; runner has no fresh training check yet |
-| ViT table and grouping figures | Extracted `experiments/vit/model.py` and adapted `train_vit_token_grouping.py` | `figures/data/vit_runs.csv` (1,377 per-seed records) plus exact 6k labels | Historical model-equivalence and data checks pass; fresh GPU re-run pending |
+| Dense Fourier MLP table, dimensions 4 and 8 | `experiments/dense_fourier/run_dense_fourier_mlp.py` | `figures/data/dense_fourier_d{4,8}_runs.csv` (720 runs per dimension) and matching table summaries | Historical aggregation verified; one full 10,000-step PLN[4] configuration in each dimension closely matched its archived per-run result on RTX 4090 GPU1. The five-target/three-seed paper summary is not freshly reproduced; see `FOURIER_FULL_VALIDATION_20261010.md`. |
+| Helmholtz PINN tables | `experiments/pinn/run_helmholtz.py` is a standalone extraction; original `helmholtz_learnable_2` trainer remains outside this release | 42 selected-run configurations and final values in `experiments/pinn/data/table2_selected_runs.csv`; raw W&B logs excluded | Two headline PLN[4] cells matched using the original trainer. Two distinct selected width-128 cells (PLN[4]/Adam and SAT/SGD) completed full 6,000-step runs with the extraction and match printed precision; this is not a full-table reproduction. |
+| Exploratory output-NTK appendix | The same extracted runner has a distinct `ntk` protocol and `output_ntk.py` | 240 privacy-screened paired numeric rows for the five manuscript methods in `experiments/pinn/data/ntk_matched_240.csv` | Medians reconstruct the appendix table; the extracted 4,000-step PLN4/width-128/seed-1 run matches one archived row to about `1.61e-16` absolute relative-L2 difference. The rest of the grid remains unvalidated. This is not a PDE-residual or Table II mechanism check. |
+| Mixed-axis CNN table and figures | `experiments/cnn/run_cifar10_conv_gn_{random,clean}_labels.py` | `figures/data/cnn_runs.csv` (288 per-seed records) | Data completeness and paper checkpoints pass. [One full random-label PLN[4] GPU cell](CNN_FULL_VALIDATION_20261010.md) matched the archived final fitting accuracy and closely followed its curve; the full grid remains unverified. |
+| VGG-16 initialization figure | `experiments/vgg/` contains a minimal extracted model, reconstructed one-cell runner and non-executing full-factor grid planner; private grid has 630 scripts / two seeds, while manuscript specifies 945 runs / three seeds | Verified plotting data not located | CPU checks and limited RTX 4090 training smoke runs passed; a newly planned three-seed sweep is not the archived experiment, and the historical figure remains unverified |
+| ViT table and grouping figures | Extracted `experiments/vit/model.py` and adapted `train_vit_token_grouping.py` | `figures/data/vit_runs.csv` (1,377 per-seed records) plus exact first-6k random labels; original CIFAR-10 clean labels are not bundled | Historical model-equivalence and data checks pass. The minimized label CSV generates byte-identical 6k/20k artifacts to the previous candidate on the same dataset cache. One full 100-epoch GPU1 configuration closely matched its historical best-fit value; see [single-run evidence](VIT_FULL_VALIDATION_20261010.md). Full paper-grid reproduction is pending. |
 
 The coverage table was rechecked against the active experiment sections of the
 arXiv source on 2026-10-10. Its active families are Dense Fourier, Helmholtz
-PINN, mixed-axis CNN, VGG-16, and ViT. Earlier MNIST random-label material is
+PINN, exploratory output-NTK, mixed-axis CNN, VGG-16, and ViT. Earlier MNIST random-label material is
 commented out, and the preliminary machine-translation subsection is inside
 an excluded `\iffalse` block; neither is a missing release component. This
-scope check does not resolve the PINN or VGG provenance gaps above.
+scope check does not resolve the PINN extraction-validation or VGG figure-provenance gaps above.
 
 ## Local checks without training
 
 ```sh
-python -m unittest discover -s tests -v
-python figures/verify_data.py
-python figures/verify_fourier_data.py
-python figures/plot_from_csv.py
-python figures/plot_normalization_domain_schematic.py
+python tools/validate_candidate.py
 ```
 
-`verify_data.py` checks CNN/ViT row completeness and selected manuscript-level checkpoints; it does not audit every original training log. `verify_fourier_data.py` independently reconstructs the shared-learning-rate selection and two Dense Fourier table summaries from all 1,440 sanitized per-run records. The plotting scripts write to the ignored `figures/generated/` directory. These figures use compact per-seed CSVs and may differ typographically from manuscript PDF assets.
+This command runs normal and optimized-mode tests and data checks, probes
+non-training entry points, and verifies that eight plots were regenerated. It
+does not download CIFAR-10, use a GPU, or train a model. The same command is
+used by the CPU CI workflow; CI has not run on GitHub for this unpublished
+candidate.
 
-All six documented experiment/data-preparation entry points also passed
+`verify_data.py` checks that each expected CNN/ViT dataset--mode--grouping--seed cell occurs exactly once, that source paths are unique, and that reported accuracies are finite percentages. It checks all four printed CNN summary values and all 15 printed ViT summary cells, selecting the best three-seed mean and best individual run independently within each ViT table row. The CNN/ViT plotting entry point applies the same per-run validation before writing any figure. These checks do not audit every original training log. `verify_fourier_data.py` reconstructs the shared-learning-rate selection and two Dense Fourier table summaries from all 1,440 sanitized per-run records, then checks all 32 printed mean/SD pairs against constants independent of the summary CSVs. The plotting scripts write to the ignored `figures/generated/` directory. These figures use compact per-seed CSVs and may differ typographically from manuscript PDF assets. See [PAPER_ARTIFACT_MAP.md](PAPER_ARTIFACT_MAP.md) for item-level coverage.
+
+The experiment/data-preparation entry points passed
 `--help` import and argument-parsing checks on Windows. VGG and ViT use
-`python -m experiments...`, while Dense Fourier and CNN use direct script
-paths. These checks neither download data nor exercise a training epoch.
+`python -m experiments...`; Dense Fourier uses a direct script path. Both CNN
+scripts now support direct paths and `python -m experiments.cnn...`, and both
+invocation styles passed argument-parsing checks. These checks neither
+download data nor exercise a training epoch.
+
+The [CNN-specific guide](../experiments/cnn/README.md) maps every
+`bgn<G>k<K>` name to its normalization domain and gives one complete
+random-label and clean-label paper-protocol command. The checked 288-row
+historical grid remains separate from any new single-configuration run.
 
 The [ViT-specific guide](../experiments/vit/README.md) covers fixed 6k/20k
 artifact generation, the extracted model and one-cell training commands. Its
@@ -44,7 +54,7 @@ clean/random labels. The original 20k artifact digest is not yet available for
 bytewise comparison.
 
 The [VGG-specific guide](../experiments/vgg/README.md) records the extracted
-model and one-cell runner. Its archival grid has only two seeds, and no matching
+model, one-cell runner and prospective grid planner. Its archival grid has only two seeds, and no matching
 per-run output logs were found; the current manuscript's 945-run figure is not
 validated by the extracted code alone. The historical `val_loader` actually
 uses the standard CIFAR-10 test split (`train=False`), which helps interpret
@@ -56,11 +66,84 @@ best-epoch accuracy; the reconstructed runner saves both per epoch.
 In a local read-only comparison against an archived `Musicath-base` VGG source,
 the extracted PLN model's state keys, initial tensors and forward output were
 identical under seed 20 and initialization scale 0.7. This is a model extraction
-check, not a training-result comparison.
+check, not a training-result comparison. On 2026-10-10, three isolated CIFAR-10
+GPU smoke runs from candidate commit `221c94b` completed on an RTX 4090: PLN[8]
+and ReLU each trained for one epoch with two training batches; PLN[8] also
+completed a ten-epoch warmup with eight training batches per epoch. All used
+seed 20. The per-run logs remain outside this repository and have SHA-256
+digests `27ccddfa71343fce06ffcb6e0de817f3c382fe503eb3d6a7efed1b6e272a6129`,
+`98801e1e01c68cb2dc7706adfbb9a85b494e3bab9bcb4138489d1ce06de0f645`,
+and `ff6217b89f55efa4e747917af8114be8e0c38c9285cf97986ca41eaff0154556`,
+respectively. Batch-limited accuracy is not comparable to the manuscript figure.
+
+The archived PINN audit traces all 42 Table II values to recorded optimizer/seed
+settings. The historical initial learning rates are Adam `3e-4` and SGD `1e-4`
+for 6,000 iterations, not `3e-4` for both. The original trainer creates a step
+scheduler but does not advance it in the inspected path. Two independent full
+PLN[4] re-runs at widths 128 and 256 matched the reported six-decimal table
+entries. Additional isolated 100-step Adam and SGD checks completed on an RTX
+3090; their console-log SHA-256 digests are
+`094811eb97e2d04e644b82baff4dc64b9f8f7b3f26c6dd12bbb30118b958ed67`
+and `ef2dbd240d2496bb78ede411199796c90e0ee4d40db192b879a8aa1c458d2610`.
+These short runs are execution checks, not table-cell reproductions. The original
+one-cell launcher and full-matrix launcher have SHA-256 digests
+`41a1eea1dc280ee0af016be2178c10f5ef244ba8a85976daea0b445fb740e542`
+and `473fe5833f36440d4a321602358aebfe20c304130f914b1c445d8733593c4252`.
+The archived W&B archive's 297 listed file hashes were checked, and all 42
+final metrics agree with the printed six-decimal cells. It contains only the
+42 selected source runs, not every run in the 420-configuration search. The
+raw files carry private person, host, machine-path and run metadata and are
+not bundled. `experiments/pinn/data/table2_selected_runs.csv` retains only
+the paper-relevant numeric values and launch settings. The historical Git
+commit recorded in all 42 runs lacks the `helmholtz_learnable_2` task, so the
+exact uncommitted training source state has not been recovered. The standalone
+extraction is not claimed to be that source state.
+
+The distinct NTK follow-up is summarized by 240 balanced rows (five methods,
+two widths, four Adam rates, three seeds, two optimizer stages) after removing
+run identifiers and server paths from a 288-row historical matched matrix.
+It uses 100 rather than 500 boundary training points, 4,000 total optimizer
+steps, and a 500-point output NTK. The raw NTK results and checkpoints remain
+outside this release. `experiments/pinn/verify_data.py` recomputes the
+manuscript's per-method medians from the sanitized rows and independently
+checks the rounded values printed in both the Table II breakdown and NTK table.
+
+On an idle RTX 3090 GPU1, a separate two-step run of the extracted PLN4
+NTK protocol (width 128, seed 1, Adam `1e-4`, `--ntk-points 500`,
+`--save-eigvals`) exited successfully in Python 3.10 / PyTorch 2.6.0+cu124 /
+DeepXDE 1.15.0. It saved 500 initial and 500 final eigenvalues, with
+90% effective ranks 12 and 8. Its finite final relative-L2 metric was
+`1.153600329`; the `summary.json` SHA-256 was
+`caaadf2c619eeba95a5d6816f2c719185c1e129d6d73e5ca64ec83f51955dad0`.
+This is a path/serialization smoke check, not a re-run of the archived
+4,000-step matrix. The author-supplied ICML 2026 rebuttal text was checked
+against the arXiv discussion; its earlier 64-point PINN and 500-point 8D
+MLP ranks lack a complete recoverable protocol and are not promoted to
+reproduced results.
+
+The same extracted PLN4/width-128/seed-1 configuration was then run for
+the full 4,000 Adam steps, at `1e-4` with 500 output-NTK probe points on
+that RTX 3090. Its final relative-L2 error was
+`4.452487451562643e-05`, compared with the archived matched row's
+`4.452487451578786e-05` (absolute difference about `1.61e-16`). Initial
+90%-trace effective rank was 12 in both; the stable-rank diagnostic matched
+to printed precision. The full-run `summary.json` SHA-256 was
+`f2126a6b997f0abb6875f5c944a1ad7b19e2b345c42a1e27108d8836c1d5a5cb`.
+This validates one NTK configuration numerically, not the full grid, all
+method families, or the separate 6,000-step Table II protocol.
 
 ## Training entry points already included
 
-The scripts below are the source files used for the corresponding research runs, with machine-independent input/output arguments. They have **not yet** passed fresh GPU verification in this repository. Keep results outside the repository or under the ignored `outputs/` directory.
+The scripts below are paper-specific training sources or documented standalone
+extractions with machine-independent input/output arguments. The PINN runner
+is explicitly a new extraction, not the archived binary. Not every family has
+passed a fresh GPU training check, and none of the short checks alone verifies
+the full paper grid. Keep results outside the repository or under the ignored
+`outputs/` directory.
+
+The [PINN/NTK guide](../experiments/pinn/README.md) gives the two distinct
+protocols, one-run commands, original-log provenance caveats, and the
+privacy-screened data-release decision.
 
 The Dense Fourier runner generates a fixed target from `--target-seed` and splits from `--data-seed`. The paper sweeps target seeds `20260903, 20260913, 20260923, 20260933, 20260943`, model seeds `0, 1, 2`, learning rates `1e-4, 3e-4, 1e-3`, depths `1, 4`, and the eight listed nonlinearities for each of dimensions 4 and 8. Every run uses 500 warmup steps followed by cosine decay. A single configuration can be launched as follows; it represents one of the 1,440 archived cells, not the full sweep:
 
@@ -74,6 +157,14 @@ python experiments/dense_fourier/run_dense_fourier_mlp.py \
   --target-seed 20260903 --data-seed 20260904 --model-seed 0 \
   --eval-every 200
 ```
+
+The Dense Fourier runner now refuses to overwrite a result JSON with the same
+run key. `--skip-existing` is opt-in and checks every saved experiment
+parameter, the evaluation interval, and the resolved device before skipping;
+older result files lacking those fields are not silently treated as matches.
+The run key alone omits some CLI settings and must not be used as proof that
+two runs are identical. Use a different output directory for a deliberate
+new run with colliding keys.
 
 The CNN grid uses $G_C\in\{1,2,4,8,16,32,64,128\}$ channel groups and $K\in\{1,2,4,8,16,32\}$ spatial splits per axis, with operator names `bgn<G_C>k<K>`. Each cell has model seeds `0,1,2`. These are representative per-cell commands, **not** an instruction to launch all 288 runs at once:
 
@@ -93,7 +184,14 @@ CUDA_VISIBLE_DEVICES=0 python experiments/cnn/run_cifar10_conv_gn_clean_labels.p
   --optimizer sgd --momentum 0.9 --weight-decay 0
 ```
 
-These CNN scripts request CIFAR-10 through `torchvision.datasets.CIFAR10` when needed. The training output, downloaded images, and checkpoints are not part of Git. Review the dataset's own terms before redistributing it.
+These CNN scripts use `torchvision.datasets.CIFAR10` but do not contact the
+dataset host by default; pass `--download` explicitly if the local cache is
+absent. Their per-run JSON records are never overwritten. `--skip-existing`
+checks the saved configuration, evaluation interval, device, and resolved data
+root before reusing a record; an all-skipped invocation returns before loading
+the dataset or requiring a GPU. Older run files without these fields cannot
+be silently reused. The training output, downloaded images, and checkpoints
+are not part of Git. Review the dataset's own terms before redistributing it.
 
 ## Environment provenance and GPU validation
 
@@ -173,10 +271,85 @@ unit tests could not start in that environment; this does not establish a
 repository-code test failure. The missing Windows runtime dependency has
 not been identified, and no third-party DLL was installed.
 
+A separate 51-file snapshot of the **uncommitted candidate at test time** was
+assembled from tracked and non-ignored untracked source files outside the
+repository on 2026-10-10. With `PYTHONPATH` cleared, it passed all 24 unit
+tests, the CNN/ViT, Dense Fourier and PINN/NTK data verifiers, seven training
+entrypoint `--help` checks, both PINN protocol dry runs, and both figure
+generation scripts. All eight generated figure files were nonempty. This
+checks that those imports and non-training workflows do not depend on other
+files in the development checkout. It used an existing Windows Python 3.11.5
+environment (PyTorch 2.0.1+cpu, torchvision 0.15.2+cpu, NumPy 1.26.4,
+Matplotlib 3.7.2), **not** a fresh dependency installation or GPU training
+environment. `pip check` in that shared environment reported conflicts among
+unrelated installed packages, so it is not a clean-install certificate.
+
+The later 53-file candidate, including the static private-framework import
+guard, was transferred as a SHA-256-checked source archive to a separate
+temporary Linux directory. The archive digest was
+`12967e783dd70082ae84b46b937fe630a54eaf693609962bb60f6ff3a41aa913`.
+In an existing Python 3.10.19 / PyTorch 2.6.0+cu124 / torchvision
+0.21.0+cu124 / NumPy 2.1.3 / Matplotlib 3.10.7 environment, all 26 tests,
+three data verifiers, eight training-entrypoint `--help` checks, both PINN
+protocol dry runs, and both plotting scripts passed; eight generated files
+were nonempty. This snapshot predates the present documentation note. It
+validates source isolation and non-training workflows only: the environment
+was not freshly installed from `requirements-smoke.txt`, hosted GitHub CI did
+not run, and these checks do not reproduce the manuscript training results.
+
+After that Linux snapshot, all three manuscript-data verifiers were changed
+from `assert`-based checks to explicit exceptions: Python's `-O` flag would
+otherwise silently remove many completeness and paper-value checks. A source
+test now rejects `assert` statements in those verifier files, and a unit test
+rejects an altered Table II selected metric. The updated local Windows tree
+passed all 28 unit tests in both normal and `python -O` mode, and all three
+data verifiers completed in optimized mode. This is a release-integrity fix,
+not new evidence that the archived training runs can be reproduced.
+
 The historical Dense Fourier environment (`polynomial`) was also inspected
 read-only: Python 3.13.2, PyTorch 2.6.0+cu124, CUDA 12.4, NumPy 2.2.4.
-Training runners have not been exercised on a clean checkout. Before a full
-experiment, record the Git commit, command, output path and GPU state, then run
-one short training smoke test and one representative full configuration per
-available family. A one-seed run is an execution check, not a verification of
-three-seed or five-target paper statistics.
+On 2026-10-10, a later exact 64-file candidate snapshot completed isolated
+RTX 4090 GPU1 short training in Dense Fourier, CNN, ViT, and VGG paths;
+VGG additionally completed ten uncapped epochs with its ten-epoch warmup.
+The same snapshot passed the full non-training validator in an existing Linux
+environment. Configurations, observed metrics, source/evidence hashes, and
+limits are in [GPU_VALIDATION_20261010.md](GPU_VALIDATION_20261010.md).
+This is not a fresh dependency installation or a representative full paper
+configuration for Dense Fourier, CNN, or ViT. One-seed execution does not
+verify three-seed or five-target paper statistics.
+
+After the fixed-label CSV was minimized, an **updated 65-file uncommitted
+candidate snapshot** (source archive SHA-256
+`756eccbf5a25704ab17f8872f055ba68928c0920d68bebbfba537459daf8a070`)
+was installed in a new private Linux Python 3.10.12 venv on the eight-RTX-4090
+host. The venv initially had no PyTorch or pip; an existing trusted pip was
+directed into it with `pip --python`. Installed versions were PyTorch
+2.4.0+cpu, torchvision 0.19.0+cpu, NumPy 2.2.6 and Matplotlib 3.10.3.
+`pip check` found no broken requirements, and imports resolved to that venv.
+The first validation command attempted `venv/bin/python -m pip check` and
+therefore stopped because the no-pip venv did not have a `pip` module; rerunning
+the check through the same external pip's `--python` target passed without
+reinstalling packages. From the extracted source with `PYTHONPATH` and CUDA
+visibility cleared, `tools/validate_candidate.py` passed 44 tests in both
+normal and optimized modes, all three data verifiers in both modes, ten
+entrypoint checks, two PINN dry runs and eight generated figures. The private
+install and validation logs are retained under ignored
+`outputs/fresh_candidate_20261010_evidence/`, with SHA-256 values
+`0e5b2fe4fac09c20cf514273d4d623e848b812e88e92cb7d6c7f2033ae757878`
+and `b33d6e6a7f7986154ade4ae4c5bb738243e49634e6f94e2ffe0e9f61a345152d`.
+This fresh install did **not** include DeepXDE, train on a GPU, reproduce
+historical metrics, or run GitHub-hosted CI. Its source snapshot predates this
+documentation paragraph and is not a final staged release commit.
+
+The same 65-file source snapshot was separately exercised under an existing
+Python 3.10.16 / PyTorch 2.6.0+cu126 GPU environment on physical RTX 4090
+GPU 1. Full single configurations for Dense Fourier dimensions 4 and 8 and
+for the 100-epoch ViT random-20k PLN[4] setting were compared with archived
+rows. Their evidence, output hashes and cross-environment caveats are in
+[FOURIER_FULL_VALIDATION_20261010.md](FOURIER_FULL_VALIDATION_20261010.md)
+and [VIT_FULL_VALIDATION_20261010.md](VIT_FULL_VALIDATION_20261010.md).
+Neither check reconstructs the paper's multi-run summary statistics.
+The same source snapshot also completed one 200-epoch random-label CNN
+PLN[4] cell on GPU 1; its [single-cell report](CNN_FULL_VALIDATION_20261010.md)
+records the matched protocol, full-curve comparison and private evidence
+hashes. It does not verify other CNN groupings or clean-label runs.

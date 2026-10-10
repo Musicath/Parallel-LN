@@ -5,13 +5,18 @@ import unittest
 import torch
 from torch import nn
 
+from experiments.cnn.run_cifar10_conv_gn_clean_labels import ConvNormNet as CleanConvNormNet
 from experiments.cnn.run_cifar10_conv_gn_random_labels import (
     BlockGroupNorm,
+    ConvNormNet,
     PositionGroupNorm,
 )
 
 
 class CNNDomainTests(unittest.TestCase):
+    def test_clean_runner_imports_the_shared_backbone_as_a_module(self):
+        self.assertIs(CleanConvNormNet, ConvNormNet)
+
     def test_full_map_endpoint_equals_group_norm(self):
         x = torch.randn(2, 32, 8, 8)
         actual = BlockGroupNorm(32, num_channel_groups=4, spatial_splits=1)(x)

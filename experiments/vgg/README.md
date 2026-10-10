@@ -43,3 +43,38 @@ manuscript describes 945 runs and three seeds. The third seed's launch source
 and the per-run results have not been found, so this directory is **not yet**
 a verified reproduction of the figure. `--max-train-batches` is only for
 development smoke checks and cannot yield paper-comparable accuracy.
+
+For a **new prospective** sweep, `make_grid_plan.py` enumerates the exact five
+activations, seven learning rates and nine initialization multipliers stated in
+the manuscript. It requires explicit seeds and writes a JSONL plan whose
+`argv` arrays invoke the one-cell runner; it does not start training. With
+seeds 20 and 30 it produces 630 entries. Adding a third author-chosen seed
+produces 945 entries, but does **not** recover the unidentified historical
+third seed or its results. For example, if seed 40 is chosen for a new run:
+
+```sh
+python -m experiments.vgg.make_grid_plan \
+  --seeds 20 30 40 --data-root data/cifar10 \
+  --output-root outputs/vgg/runs --plan outputs/vgg/grid_plan.jsonl
+```
+
+The plan and future run directories are under ignored `outputs/`. Review the
+plan, device assignment, data availability and compute budget before executing
+any entry. Do not label a newly executed grid as the archived 945-run figure.
+
+On 2026-10-10, an isolated source archive from commit `221c94b` completed
+limited CIFAR-10 training on an RTX 4090: one-epoch PLN[8] and ReLU runs with
+two training batches each, plus a ten-epoch PLN[8] run retaining the historical
+warmup but limiting each epoch to eight training batches. All used seed 20 and
+completed without a code-path error. Their logs are identified by SHA-256 in
+`../../docs/REPRODUCIBILITY.md`; the resulting accuracies are **not** evidence
+for the manuscript's stability figure.
+
+A later 64-file isolated **uncommitted candidate** completed ten uncapped
+epochs of the seed-20 PLN[8] cell on RTX 4090 GPU1 with the historical
+ten-epoch warmup, batch size 256, learning rate 0.01 and initialization
+multiplier 1. All ten epoch records were saved; the final standard CIFAR-10
+test accuracy was 65.4%. A separate one-epoch uncapped entry check also
+passed. Source and evidence hashes, environment and other family smoke tests
+are in `../../docs/GPU_VALIDATION_20261010.md`. Ten epochs do not reproduce
+the paper's 200-epoch grid or establish which epoch statistic was plotted.

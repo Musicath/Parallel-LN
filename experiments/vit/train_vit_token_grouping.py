@@ -34,16 +34,23 @@ def noise_tag(noise_rate):
 
 def git_status_summary():
     try:
-        out = subprocess.check_output(
-            ["git", "status", "--short"],
+        revision = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
             cwd=REPO_ROOT,
             text=True,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+        status = subprocess.check_output(
+            ["git", "status", "--porcelain"],
+            cwd=REPO_ROOT,
+            text=True,
+            stderr=subprocess.DEVNULL,
         )
-    except Exception as exc:
-        return {"error": str(exc)}
-    lines = [line for line in out.splitlines() if line.strip()]
-    return {"dirty": bool(lines), "num_entries": len(lines), "entries": lines[:80]}
+    except (OSError, subprocess.CalledProcessError):
+        return {"available": False}
+    count = sum(bool(line.strip()) for line in status.splitlines())
+    return {"available": True, "revision": revision,
+            "dirty": bool(count), "num_entries": count}
 
 
 class FixedNoisyCIFAR10(torch.utils.data.Dataset):

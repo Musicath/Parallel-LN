@@ -1,3 +1,5 @@
+# The VGG-D configuration and initializer follow a torchvision-style pattern;
+# see THIRD_PARTY_NOTICES.md and licenses/torchvision-BSD-3-Clause.txt.
 """Standalone extraction of the historical CIFAR-10 VGG-16 architecture.
 
 Only the five activation families used in the paper's VGG grid are retained.

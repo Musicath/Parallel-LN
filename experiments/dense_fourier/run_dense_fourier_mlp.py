@@ -403,12 +403,23 @@ def main() -> None:
     )
     args.output.mkdir(parents=True, exist_ok=True)
     result_path = args.output / f"{cfg.key}.json"
-    if args.skip_existing and result_path.exists():
-        print(f"skip existing {result_path}", flush=True)
+    if result_path.exists():
+        if not args.skip_existing:
+            raise FileExistsError(f"refusing to overwrite an existing run: {result_path}")
+        saved = json.loads(result_path.read_text(encoding="utf-8"))
+        expected = {**asdict(cfg), "eval_every": args.eval_every,
+                    "device": str(device)}
+        if any(saved.get(name) != value for name, value in expected.items()):
+            raise ValueError(
+                f"existing run does not match every requested parameter: {result_path}"
+            )
+        print(f"skip matching existing run {result_path}", flush=True)
         return
     result = train(cfg, device, args.eval_every)
     result["device"] = str(device)
-    result_path.write_text(json.dumps(result, indent=2))
+    result["eval_every"] = args.eval_every
+    with result_path.open("x", encoding="utf-8") as stream:
+        stream.write(json.dumps(result, indent=2) + "\n")
     print(
         f"completed {cfg.key}: test_rel_l2={result['test_relative_l2']:.6e} "
         f"train_mse={result['train_mse']:.6e} test_mse={result['test_mse']:.6e} "

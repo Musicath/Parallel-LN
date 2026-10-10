@@ -23,22 +23,5 @@ jobs:
             --extra-index-url https://pypi.org/simple
           python -m pip install -r requirements-smoke.txt
           python -m pip check
-      - name: Unit and manuscript-data checks
-        run: |
-          python -m unittest discover -s tests -v
-          python figures/verify_data.py
-          python figures/verify_fourier_data.py
-      - name: Experiment entrypoint checks (no training)
-        run: |
-          python experiments/dense_fourier/run_dense_fourier_mlp.py --help > /dev/null
-          python experiments/cnn/run_cifar10_conv_gn_random_labels.py --help > /dev/null
-          python experiments/cnn/run_cifar10_conv_gn_clean_labels.py --help > /dev/null
-          python -m experiments.vgg.train_cifar10 --help > /dev/null
-          python -m experiments.vit.prepare_fixed_labels --help > /dev/null
-          python -m experiments.vit.train_vit_token_grouping --help > /dev/null
-      - name: Plot generation
-        env:
-          MPLBACKEND: Agg
-        run: |
-          python figures/plot_from_csv.py
-          python figures/plot_normalization_domain_schematic.py
+      - name: Candidate checks (no dataset download or training)
+        run: python tools/validate_candidate.py
