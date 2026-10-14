@@ -20,6 +20,22 @@ from experiments.vgg.model import ACTIVATIONS, PaperVGG16
 
 MEAN = (0.4914, 0.4822, 0.4465)
 STD = (0.2023, 0.1994, 0.2010)
+LR_DECAY_EPOCHS = (50, 90, 130, 170)  # one-based, applied before these epochs
+LR_DECAY_FACTOR = 1 / 2.5
+
+
+def learning_rate_for_epoch(initial_lr, epoch_number, warmup_epochs=10):
+    """Paper schedule using one-based epoch numbers, without scheduler state.
+
+    Epochs 1..10 linearly warm up to the selected initial rate. The first
+    decay is applied before training epoch 50, then at 90, 130 and 170.
+    """
+    if epoch_number < 1 or warmup_epochs < 0:
+        raise ValueError("epoch_number must be positive and warmup nonnegative")
+    if warmup_epochs and epoch_number <= warmup_epochs:
+        return initial_lr * epoch_number / warmup_epochs
+    decays = sum(epoch_number >= milestone for milestone in LR_DECAY_EPOCHS)
+    return initial_lr * LR_DECAY_FACTOR ** decays
 
 
 def parse_args(argv=None):
@@ -129,32 +145,28 @@ def run(args):
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9,
                                 weight_decay=args.weight_decay)
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(
-        optimizer, milestones=[40, 80, 120, 160], gamma=0.4)
     config = {key: str(value) if isinstance(value, Path) else value
               for key, value in vars(args).items()}
     config.update(torch_version=torch.__version__,
-                  torchvision_version=__import__("torchvision").__version__)
+                  torchvision_version=__import__("torchvision").__version__,
+                  lr_decay_epochs=LR_DECAY_EPOCHS,
+                  lr_decay_factor=LR_DECAY_FACTOR)
     (args.output / "config.json").write_text(json.dumps(config, indent=2) + "\n",
                                              encoding="utf-8")
     best_test_accuracy = 0.0
     with (args.output / "epochs.jsonl").open("x", encoding="utf-8") as log:
         for epoch in range(args.epochs):
-            # Mirrors the archived trainer's manual ten-epoch warmup followed
-            # by stepping a MultiStepLR with milestones 40/80/120/160.
-            if epoch < args.warmup_epochs:
-                lr = args.lr * (epoch + 1) / args.warmup_epochs
-                for group in optimizer.param_groups:
-                    group["lr"] = lr
-            else:
-                scheduler.step()
+            epoch_number = epoch + 1
+            lr = learning_rate_for_epoch(args.lr, epoch_number, args.warmup_epochs)
+            for group in optimizer.param_groups:
+                group["lr"] = lr
             current_lr = optimizer.param_groups[0]["lr"]
             train_accuracy, train_loss = train_epoch(
                 model, train_loader, optimizer, criterion, device,
                 max_batches=args.max_train_batches)
             test_accuracy, test_loss = evaluate(model, test_loader, criterion, device)
             best_test_accuracy = max(best_test_accuracy, test_accuracy)
-            record = dict(epoch=epoch, lr=current_lr,
+            record = dict(epoch=epoch, epoch_number=epoch_number, lr=current_lr,
                           train_accuracy=train_accuracy, train_loss=train_loss,
                           test_accuracy=test_accuracy, test_loss=test_loss,
                           best_test_accuracy=best_test_accuracy)

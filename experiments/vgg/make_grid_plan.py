@@ -35,6 +35,9 @@ def build_plan(seeds, data_root, output_root, device="cuda:0", download=False):
                         "--init-scale", init_scale,
                         "--seed", str(seed),
                         "--epochs", "200",
+                        "--warmup-epochs", "10",
+                        "--batch-size", "256",
+                        "--weight-decay", "0.0001",
                         "--device", device,
                     ]
                     if download:

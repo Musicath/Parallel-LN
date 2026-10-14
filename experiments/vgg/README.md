@@ -13,8 +13,9 @@ flip, AutoAugment, and the archived channel normalization; the 10,000-image
 standard test split is evaluated after each epoch. The historical code names
 this loader `val_loader`, but it calls `CIFAR10(..., train=False)`—there is no
 separate validation split. The runner uses SGD with momentum 0.9, weight decay
-1e-4, batch size 256, a ten-epoch linear warmup, and MultiStepLR milestones
-40/80/120/160 with gamma 0.4; cuDNN benchmarking is enabled as in the
+1e-4, batch size 256, a ten-epoch linear warmup, and learning-rate division
+by 2.5 before one-based epochs 50/90/130/170 (equivalent to the archived
+post-warmup 40/80/120/160 milestones); cuDNN benchmarking is enabled as in the
 historical trainer. It writes `config.json` and per-epoch JSONL
 records to a new output directory, and never silently replaces existing runs.
 The JSONL records both each epoch's `test_accuracy` and the running
@@ -61,6 +62,34 @@ python -m experiments.vgg.make_grid_plan \
 The plan and future run directories are under ignored `outputs/`. Review the
 plan, device assignment, data availability and compute budget before executing
 any entry. Do not label a newly executed grid as the archived 945-run figure.
+
+After a **new** three-seed, 200-epoch grid has finished, audit every run and
+aggregate the fixed-grid cell means with an explicit epoch statistic:
+
+```sh
+python -m experiments.vgg.summarize_grid \
+  --run-root outputs/vgg/runs --seeds 20 30 40 --metric final \
+  --output outputs/vgg/summary_final.csv
+```
+
+The summarizer checks all 945 run directories, the saved settings, and all 200
+epoch records before writing a 315-cell CSV; missing or shortened runs fail the
+audit. `--metric best` is available only as an explicitly labeled alternative.
+The original figure's final-versus-best epoch choice is still unverified, so
+neither choice is silently presented as a recovered historical result. The
+seed `40` here is only an example author-chosen seed for a future replication.
+
+To draw a five-panel heatmap from that verified CSV (not from the lost archive):
+
+```sh
+python -m experiments.vgg.plot_grid \
+  --summary outputs/vgg/summary_final.csv \
+  --output outputs/vgg/vgg_new_replication.pdf
+```
+
+The plotter rejects incomplete grids and does not overwrite an existing figure.
+It shares a 0--100% color scale across all five nonlinear layers, with learning
+rates increasing left to right and initialization scales increasing bottom to top.
 
 On 2026-10-10, an isolated source archive from commit `221c94b` completed
 limited CIFAR-10 training on an RTX 4090: one-epoch PLN[8] and ReLU runs with

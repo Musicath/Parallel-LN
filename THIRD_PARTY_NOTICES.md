@@ -25,6 +25,9 @@ The paper-specific extraction in `experiments/vgg/model.py` has a different
 classifier and selectable normalization/activation layers. The exact lineage
 and revision of the private historical source are not established, so this is
 a conservative attribution rather than a claim of byte-for-byte copying.
+The separate `experiments/vgg_bias_init/model.py` likewise retains a VGG-D
+feature layout from the authors' historical `Musicath-base` source while
+reducing its framework-dependent implementation.
 For any incorporated torchvision-derived portions, retain the upstream
 [BSD 3-Clause license and copyright notice](licenses/torchvision-BSD-3-Clause.txt).
 

@@ -35,6 +35,10 @@ Supported layouts are `[batch, features]` (`dim=2`), `[batch, tokens, features]`
 
 The translation experiments are not part of the active arXiv manuscript and are not included here.
 
+An additional [108-cell VGG-Bias initialization extraction](experiments/vgg_bias_init/README.md)
+is provided as a separately labeled historical study. Its ReLU/Tanh and
+No/LN/BN grid is **not** the manuscript's 945-run PLN[8] VGG figure.
+
 ## Quick checks
 
 Use a compatible Python/PyTorch/torchvision environment; a tested setup and
@@ -52,10 +56,9 @@ The CPU checks are also configured in a GitHub Actions workflow. Hosted results 
 
 The [ViT guide](experiments/vit/README.md) explains how to reconstruct the fixed-label artifacts without publishing CIFAR-10 images or the private `Musicath-base` framework.
 
-## References and license
+## Citation and license
 
-1. Ni et al., *On the Nonlinearity of Layer Normalization*, arXiv:2406.01255 (2024).
-2. Ni et al., *Parallel Layer Normalization for Universal Approximation*, [arXiv:2505.13142](https://arxiv.org/abs/2505.13142) (2025; the arXiv revision is in preparation).
+Ni et al., *Parallel Layer Normalization for Universal Approximation*, [arXiv:2505.13142](https://arxiv.org/abs/2505.13142) (2025; the arXiv revision is in preparation).
 
 If you use this repository for work reported in the paper, please cite the
 arXiv paper above. A GitHub `CITATION.cff` is deferred: the CFF format requires
